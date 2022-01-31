@@ -103,3 +103,6 @@ android/configs/android-*.cfg
 # Samsung
 security/samsung/defex_lsm/defex_packed_rules.inc
 security/samsung/defex_lsm/pack_rules
+
+# out/ directory
+out/
