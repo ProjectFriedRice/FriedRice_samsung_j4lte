@@ -2042,8 +2042,10 @@ static int ebt_size_mwt(struct compat_ebt_entry_mwt *match32,
 		if (match_kern)
 			match_kern->match_size = ret;
 
+		WARN_ON(type == EBT_COMPAT_TARGET && size_left);
 		/* rule should have no remaining data after target */
 		if (type == EBT_COMPAT_TARGET && size_left)
+		if (WARN_ON(type == EBT_COMPAT_TARGET && size_left))
 			return -EINVAL;
 
 		match32 = (struct compat_ebt_entry_mwt *) buf;

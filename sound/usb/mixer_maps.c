@@ -439,10 +439,6 @@ static struct usbmix_ctl_map usbmix_ctl_maps[] = {
 		.map = aureon_51_2_map,
 	},
 	{
-		.id = USB_ID(0x0bda, 0x4014),
-		.map = dell_alc4020_map,
-	},
-	{
 		.id = USB_ID(0x13e5, 0x0001),
 		.map = scratch_live_map,
 		.ignore_ctl_error = 1,

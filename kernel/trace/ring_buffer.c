@@ -2,6 +2,8 @@
  * Generic ring buffer
  *
  * Copyright (C) 2008 Steven Rostedt <srostedt@redhat.com>
+ *
+ * Updated for S5E7570: JK Kim (jk.man.kim@)
  */
 #include <linux/ftrace_event.h>
 #include <linux/ring_buffer.h>
@@ -26,6 +28,9 @@
 #include <linux/fs.h>
 
 #include <asm/local.h>
+#ifdef CONFIG_SEC_DEBUG
+#include <asm/cacheflush.h>
+#endif
 
 static void update_pages_handler(struct work_struct *work);
 
@@ -359,6 +364,10 @@ struct buffer_page {
 	local_t		 entries;	/* entries on this page */
 	unsigned long	 real_end;	/* real end of data */
 	struct buffer_data_page *page;	/* Actual data page */
+#ifdef CONFIG_SEC_DEBUG
+	unsigned long *cached_page;	/* cached page addr for free */
+	unsigned long *struct_page;	/* the struct located non-cached page */
+#endif
 };
 
 /*

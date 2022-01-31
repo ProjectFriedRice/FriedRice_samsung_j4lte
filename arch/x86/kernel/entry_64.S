@@ -1573,6 +1573,17 @@ ENTRY(nmi)
 
 .Lnmi_from_kernel:
 	/*
+	 * Return back to user mode.  We must *not* do the normal exit
+	 * work, because we don't want to enable interrupts.  Fortunately,
+	 * do_nmi doesn't modify pt_regs.
+	 */
+	SWAPGS
+
+	addq	$6*8, %rsp	/* skip bx, bp, and r12-r15 */
+	jmp	restore_args
+
+.Lnmi_from_kernel:
+	/*
 	 * Here's what our stack frame will look like:
 	 * +---------------------------------------------------------+
 	 * | original SS                                             |

@@ -3089,7 +3089,7 @@ snd_soc_dapm_new_control(struct snd_soc_dapm_context *dapm,
 	prefix = soc_dapm_prefix(dapm);
 	if (prefix)
 		w->name = kasprintf(GFP_KERNEL, "%s %s", prefix, widget->name);
-	else
+	 else
 		w->name = kasprintf(GFP_KERNEL, "%s", widget->name);
 	if (w->name == NULL) {
 		kfree(w);

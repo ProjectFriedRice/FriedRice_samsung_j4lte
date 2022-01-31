@@ -24,13 +24,6 @@
 #undef VERBOSE
 
 #ifdef VERBOSE
-#define VDBG(fmt, args...) pr_debug("[%s]  " fmt , \
-				 __func__, ## args)
-#else
-#define VDBG(stuff...)	do {} while (0)
-#endif
-
-#ifdef VERBOSE
 #define MPC_LOC printk("Current Location [%s]:[%d]\n", __FILE__, __LINE__)
 #else
 #define MPC_LOC do {} while (0)
@@ -59,6 +52,8 @@ enum otg_fsm_timer {
 
 /* OTG state machine according to the OTG spec */
 struct otg_fsm {
+	int reset;
+
 	/* Input */
 	int id;
 	int adp_change;

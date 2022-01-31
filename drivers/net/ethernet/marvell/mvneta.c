@@ -2480,6 +2480,8 @@ static int mvneta_change_mtu(struct net_device *dev, int mtu)
 
 	netdev_update_features(dev);
 
+	netdev_update_features(dev);
+
 	return 0;
 }
 

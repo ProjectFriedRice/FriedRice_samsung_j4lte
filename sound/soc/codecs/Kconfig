@@ -52,6 +52,7 @@ config SND_SOC_ALL_CODECS
 	select SND_SOC_CS4270 if I2C
 	select SND_SOC_CS4271 if SND_SOC_I2C_AND_SPI
 	select SND_SOC_CS42XX8_I2C if I2C
+	select SND_SOC_LARGO if MFD_LARGO
 	select SND_SOC_CX20442 if TTY
 	select SND_SOC_DA7210 if I2C
 	select SND_SOC_DA7213 if I2C
@@ -183,9 +184,11 @@ config SND_SOC_ARIZONA
 	default y if SND_SOC_WM5102=y
 	default y if SND_SOC_WM5110=y
 	default y if SND_SOC_WM8997=y
+	default y if SND_SOC_LARGO=y
 	default m if SND_SOC_WM5102=m
 	default m if SND_SOC_WM5110=m
 	default m if SND_SOC_WM8997=m
+	default m if SND_SOC_LARGO=m
 
 config SND_SOC_WM_HUBS
 	tristate
@@ -197,9 +200,11 @@ config SND_SOC_WM_ADSP
 	default y if SND_SOC_WM5102=y
 	default y if SND_SOC_WM5110=y
 	default y if SND_SOC_WM2200=y
+	default y if SND_SOC_LARGO=y
 	default m if SND_SOC_WM5102=m
 	default m if SND_SOC_WM5110=m
 	default m if SND_SOC_WM2200=m
+	default m if SND_SOC_LARGO=m
 
 config SND_SOC_AB8500_CODEC
 	tristate
@@ -382,9 +387,20 @@ config SND_SOC_CS42XX8_I2C
 	select SND_SOC_CS42XX8
 	select REGMAP_I2C
 
+config SND_SOC_LARGO
+	tristate
+
 config SND_SOC_CX20442
 	tristate
 	depends on TTY
+
+config SND_SOC_COD3026X
+	tristate
+	default n
+
+config SND_SOC_COD9002X
+	tristate
+	default y
 
 config SND_SOC_JZ4740_CODEC
 	select REGMAP_MMIO
@@ -533,6 +549,11 @@ config SND_SOC_SN95031
 
 config SND_SOC_SPDIF
 	tristate "S/PDIF CODEC"
+
+config SND_SOC_EXYNOS_AUDMIXER
+        tristate
+        select REGMAP_MMIO
+        select REGMAP_I2C
 
 config SND_SOC_SSM2518
 	tristate
@@ -789,6 +810,9 @@ config SND_SOC_WM9712
 config SND_SOC_WM9713
 	tristate
 
+config SND_SOC_DUMMY_CODEC
+	tristate
+
 # Amp
 config SND_SOC_LM4857
 	tristate
@@ -808,5 +832,8 @@ config SND_SOC_ML26124
 config SND_SOC_TPA6130A2
 	tristate "Texas Instruments TPA6130A2 headphone amplifier"
 	depends on I2C
+
+config SND_SOC_TFA_LOG_USER_HOST
+	tristate
 
 endmenu

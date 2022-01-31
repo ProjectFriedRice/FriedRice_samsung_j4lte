@@ -2054,6 +2054,7 @@ static int ___sys_sendmsg(struct socket *sock, struct msghdr __user *msg,
 		err = copy_msghdr_from_user(msg_sys, msg);
 	if (err)
 		return err;
+	
 
 	if (msg_sys->msg_iovlen > UIO_FASTIOV) {
 		err = -EMSGSIZE;
@@ -2264,7 +2265,6 @@ static int ___sys_recvmsg(struct socket *sock, struct msghdr __user *msg,
 		err = copy_msghdr_from_user(msg_sys, msg);
 	if (err)
 		return err;
-
 	if (msg_sys->msg_iovlen > UIO_FASTIOV) {
 		err = -EMSGSIZE;
 		if (msg_sys->msg_iovlen > UIO_MAXIOV)

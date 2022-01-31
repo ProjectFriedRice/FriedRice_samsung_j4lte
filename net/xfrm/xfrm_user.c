@@ -390,8 +390,8 @@ static inline int xfrm_replay_verify_len(struct xfrm_replay_state_esn *replay_es
 	/* Check the overall length and the internal bitmap length to avoid
 	 * potential overflow. */
 	if (nla_len(rp) < ulen ||
-	    xfrm_replay_state_esn_len(replay_esn) != ulen ||
-	    replay_esn->bmp_len != up->bmp_len)
+		xfrm_replay_state_esn_len(replay_esn) != ulen ||
+		replay_esn->bmp_len != up->bmp_len)
 		return -EINVAL;
 
 	if (up->replay_window > up->bmp_len * sizeof(__u32) * 8)
@@ -1321,7 +1321,7 @@ static int verify_newpolicy_info(struct xfrm_userpolicy_info *p)
 	ret = verify_policy_dir(p->dir);
 	if (ret)
 		return ret;
-	if (p->index && ((p->index & XFRM_POLICY_MAX) != p->dir))
+	if (p->index && (xfrm_policy_id2dir(p->index) != p->dir))
 		return -EINVAL;
 
 	return 0;

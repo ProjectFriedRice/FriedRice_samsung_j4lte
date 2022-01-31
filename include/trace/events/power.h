@@ -27,7 +27,7 @@ DECLARE_EVENT_CLASS(cpu,
 		__entry->cpu_id = cpu_id;
 	),
 
-	TP_printk("state=%lu cpu_id=%lu", (unsigned long)__entry->state,
+	TP_printk("state=%d cpu_id=%lu", (int)__entry->state,
 		  (unsigned long)__entry->cpu_id)
 );
 
@@ -518,6 +518,27 @@ DEFINE_EVENT(dev_pm_qos_request, dev_pm_qos_remove_request,
 
 	TP_ARGS(name, type, new_value)
 );
+
+/* for kernel/notifier.c */
+TRACE_EVENT(notifier_pm_suspend,
+
+	TP_PROTO(struct notifier_block *nb, unsigned long val),
+
+	TP_ARGS(nb, val),
+
+	TP_STRUCT__entry(
+		__field(	void *,		function	)
+		__field(	unsigned long,	val		)
+	),
+
+	TP_fast_assign(
+		__entry->function	= nb->notifier_call;
+		__entry->val		= val;
+	),
+
+	TP_printk("nb->function=%pf val=%lu", __entry->function, __entry->val)
+);
+
 #endif /* _TRACE_POWER_H */
 
 /* This part must be outside protection */

@@ -57,5 +57,25 @@ obj-$(CONFIG_GENWQE)		+= genwqe/
 obj-$(CONFIG_ECHO)		+= echo/
 obj-$(CONFIG_VEXPRESS_SYSCFG)	+= vexpress-syscfg.o
 obj-$(CONFIG_CXL_BASE)		+= cxl/
+obj-$(CONFIG_MCU_IPC)		+= mcu_ipc/
+obj-$(CONFIG_UART_SEL)	+= uart_sel/
+obj-$(CONFIG_USIM_DETECT)	+= usim_det/
+obj-$(CONFIG_SEC_SIPC_MODEM_IF)	+= modem_v1/
 obj-$(CONFIG_UID_SYS_STATS) += uid_sys_stats.o
+
+# TEEGRIS kernel driver
+ccflags-$(CONFIG_TZDEV) += -I$(srctree)/drivers/misc/tzdev/include
+obj-$(CONFIG_TZDEV)		+= tzdev/
+
+obj-$(CONFIG_SEC_MODEM_IF) += modem_if/
+obj-$(CONFIG_GNSS_SHMEM_IF)	+= gnss_if/
+obj-y += samsung/
 obj-$(CONFIG_MEMORY_STATE_TIME) += memory_state_time.o
+
+# TIMA
+obj-$(CONFIG_TIMA)		+= tima_debug_test.o
+obj-$(CONFIG_TIMA_LOG)		+= tima_debug_log.o
+
+# for DMVerity
+obj-$(CONFIG_DM_VERITY)		+= dmverity_query.o
+

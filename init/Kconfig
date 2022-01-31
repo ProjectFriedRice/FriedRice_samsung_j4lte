@@ -285,7 +285,6 @@ config FHANDLE
 
 config USELIB
 	bool "uselib syscall"
-	default y
 	help
 	  This option enables the uselib syscall, a system call used in the
 	  dynamic linker from libc5 and earlier.  glibc does not use this
@@ -1061,6 +1060,12 @@ config MEMCG_SWAP_ENABLED
 	  For those who want to have the feature enabled by default should
 	  select this option (if, for some reason, they need to disable it
 	  then swapaccount=0 does the trick).
+
+config MEMCG_FORCE_USE_VM_SWAPPINESS
+	bool "Force to use vm_swappiness instead of memcg->swappiness"
+	depends on MEMCG_SWAP
+	default y
+
 config MEMCG_KMEM
 	bool "Memory Resource Controller Kernel Memory accounting"
 	depends on MEMCG
@@ -1840,6 +1845,7 @@ config BASE_SMALL
 menuconfig MODULES
 	bool "Enable loadable module support"
 	option modules
+	select TIMA_LKMAUTH
 	help
 	  Kernel modules are small pieces of compiled code which can
 	  be inserted in the running kernel, rather than being

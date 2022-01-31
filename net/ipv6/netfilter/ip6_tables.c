@@ -404,6 +404,7 @@ ip6t_do_table(struct sk_buff *skb,
 					verdict = (unsigned int)(-v) - 1;
 					break;
 				}
+
 				if (*stackptr <= origptr)
 					e = get_entry(table_base,
 					    private->underflow[hook]);
@@ -817,6 +818,7 @@ translate_table(struct net *net, struct xt_table_info *newinfo, void *entry0,
 	if (!offsets)
 		return -ENOMEM;
 	i = 0;
+
 	/* Walk through entries, checking offsets. */
 	xt_entry_foreach(iter, entry0, newinfo->size) {
 		ret = check_entry_size_and_hooks(iter, newinfo, entry0,
@@ -1303,8 +1305,10 @@ do_replace(struct net *net, const void __user *user, unsigned int len)
 
 	ret = __do_replace(net, tmp.name, tmp.valid_hooks, newinfo,
 			   tmp.num_counters, tmp.counters);
+			   
 	if (ret)
 		goto free_newinfo_untrans;
+	
 	return 0;
 
  free_newinfo_untrans:

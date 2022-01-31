@@ -71,7 +71,9 @@ extern enum oom_scan_t oom_scan_process_thread(struct task_struct *task,
 extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 		int order, nodemask_t *mask, bool force_kill);
 extern int register_oom_notifier(struct notifier_block *nb);
+extern int register_oomdebug_notifier(struct notifier_block *nb);
 extern int unregister_oom_notifier(struct notifier_block *nb);
+extern int unregister_oomdebug_notifier(struct notifier_block *nb);
 
 extern bool oom_killer_disabled;
 
@@ -91,6 +93,9 @@ static inline bool oom_gfp_allowed(gfp_t gfp_mask)
 }
 
 extern struct task_struct *find_lock_task_mm(struct task_struct *p);
+
+extern void dump_tasks(struct mem_cgroup *memcg,
+		const nodemask_t *nodemask);
 
 /* sysctls */
 extern int sysctl_oom_dump_tasks;

@@ -189,6 +189,12 @@ static void __detach_context(struct cxl_context *ctx)
 	afu_release_irqs(ctx);
 	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
 	wake_up_all(&ctx->wq);
+
+	/* Release Problem State Area mapping */
+	mutex_lock(&ctx->mapping_lock);
+	if (ctx->mapping)
+		unmap_mapping_range(ctx->mapping, 0, 0, 1);
+	mutex_unlock(&ctx->mapping_lock);
 }
 
 /*
@@ -230,8 +236,6 @@ void cxl_context_detach_all(struct cxl_afu *afu)
 		mutex_unlock(&ctx->mapping_lock);
 	}
 	mutex_unlock(&afu->contexts_lock);
-}
-
 void cxl_context_free(struct cxl_context *ctx)
 {
 	mutex_lock(&ctx->afu->contexts_lock);

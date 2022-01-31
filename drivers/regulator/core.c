@@ -32,6 +32,7 @@
 #include <linux/regulator/driver.h>
 #include <linux/regulator/machine.h>
 #include <linux/module.h>
+#include <linux/exynos-ss.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/regulator.h>
@@ -1271,6 +1272,13 @@ static void regulator_supply_alias(struct device **dev, const char **supply)
 	}
 }
 
+static int _regulator_get_disable_time(struct regulator_dev *rdev)
+{
+	if (!rdev->desc->ops->disable_time)
+		return rdev->desc->disable_time;
+	return rdev->desc->ops->disable_time(rdev);
+}
+
 static struct regulator_dev *regulator_dev_lookup(struct device *dev,
 						  const char *supply,
 						  int *ret)
@@ -1415,6 +1423,9 @@ found:
 			rdev->use_count = 0;
 	}
 
+	if (rdev->constraints && rdev->constraints->expected_consumer > 0)
+		rdev->constraints->expected_consumer--;
+
 out:
 	mutex_unlock(&regulator_list_mutex);
 
@@ -1515,6 +1526,10 @@ static void _regulator_put(struct regulator *regulator)
 
 	rdev->open_count--;
 	rdev->exclusive = 0;
+
+	if (rdev->constraints && rdev->constraints->expected_consumer > 0)
+		rdev->constraints->expected_consumer++;
+
 	mutex_unlock(&rdev->mutex);
 
 	module_put(rdev->owner);
@@ -1945,7 +1960,16 @@ EXPORT_SYMBOL_GPL(regulator_enable);
 
 static int _regulator_do_disable(struct regulator_dev *rdev)
 {
-	int ret;
+	int ret, delay;
+
+	/* Query before disabling in case configuration dependent.  */
+	ret = _regulator_get_disable_time(rdev);
+	if (ret >= 0) {
+		delay = ret;
+	} else {
+		rdev_warn(rdev, "disable_time() failed: %d\n", ret);
+		delay = 0;
+	}
 
 	trace_regulator_disable(rdev_get_name(rdev));
 
@@ -1968,6 +1992,18 @@ static int _regulator_do_disable(struct regulator_dev *rdev)
 	 */
 	if (rdev->desc->off_on_delay)
 		rdev->last_off_jiffy = jiffies;
+
+	/* Allow the regulator to ramp; it would be useful to extend
+	 * this for bulk operations so that the regulators can ramp
+	 * together.  */
+	trace_regulator_disable_delay(rdev_get_name(rdev));
+
+	if (delay >= 1000) {
+		mdelay(delay / 1000);
+		udelay(delay % 1000);
+	} else if (delay) {
+		udelay(delay);
+	}
 
 	trace_regulator_disable_complete(rdev_get_name(rdev));
 
@@ -2419,6 +2455,38 @@ int regulator_is_supported_voltage(struct regulator *regulator,
 }
 EXPORT_SYMBOL_GPL(regulator_is_supported_voltage);
 
+/**
+ * regulator_get_max_support_voltage - standard get_max_supporting_volt()
+ *
+ * @rdev: Regulator to operate on
+ *
+ * This function returns maximum supporting voltage of given regulator.
+ * When one regulator buck (or ldo) is shared between multiple consumers,
+ * any consumer can get maximum supporting voltage from this function,
+ * lust like sysfs supports max_uV.
+ */
+int regulator_get_max_support_voltage(struct regulator *regulator)
+{
+	return regulator->rdev->constraints->max_uV;
+}
+EXPORT_SYMBOL_GPL(regulator_get_max_support_voltage);
+
+/**
+ * regulator_get_min_support_voltage - standard get_min_supporting_volt()
+ *
+ * @rdev: Regulator to operate on
+ *
+ * This function returns minimum supporting voltage of given regulator.
+ * When one regulator buck (or ldo) is shared between multiple consumers,
+ * any consumer can get minimum supporting voltage from this function,
+ * lust like sysfs supports min_uV.
+ */
+int regulator_get_min_support_voltage(struct regulator *regulator)
+{
+	return regulator->rdev->constraints->min_uV;
+}
+EXPORT_SYMBOL_GPL(regulator_get_min_support_voltage);
+
 static int _regulator_call_set_voltage(struct regulator_dev *rdev,
 				       int min_uV, int max_uV,
 				       unsigned *selector)
@@ -2553,6 +2621,10 @@ static int _regulator_do_set_voltage(struct regulator_dev *rdev,
 			delay = 0;
 		}
 
+		exynos_ss_regulator((char *)rdev_get_name(rdev), rdev->desc->vsel_reg,
+			(rdev->desc->ops->list_voltage) ?
+				rdev->desc->ops->list_voltage(rdev, selector) : selector, 4);
+
 		/* Insert any necessary delays */
 		if (delay >= 1000) {
 			mdelay(delay / 1000);
@@ -2560,6 +2632,10 @@ static int _regulator_do_set_voltage(struct regulator_dev *rdev,
 		} else if (delay) {
 			udelay(delay);
 		}
+
+		exynos_ss_regulator((char *)rdev_get_name(rdev), rdev->desc->vsel_reg,
+			(rdev->desc->ops->list_voltage) ?
+				rdev->desc->ops->list_voltage(rdev, selector) : selector, 5);
 	}
 
 	if (ret == 0 && best_val >= 0) {
@@ -2638,6 +2714,9 @@ int regulator_set_voltage(struct regulator *regulator, int min_uV, int max_uV)
 	old_max_uV = regulator->max_uV;
 	regulator->min_uV = min_uV;
 	regulator->max_uV = max_uV;
+
+	if (rdev->constraints->expected_consumer > 0)
+		goto out;
 
 	ret = regulator_check_consumers(rdev, &min_uV, &max_uV);
 	if (ret < 0)

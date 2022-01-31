@@ -18,6 +18,9 @@ static inline int printk_get_level(const char *buffer)
 	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {
 		switch (buffer[1]) {
 		case '0' ... '7':
+#ifdef CONFIG_SEC_DEBUG_AUTO_SUMMARY
+		case 'B' ... 'J':
+#endif
 		case 'd':	/* KERN_DEFAULT */
 			return buffer[1];
 		}
@@ -248,6 +251,31 @@ extern asmlinkage void dump_stack(void) __cold;
 #define pr_cont(fmt, ...) \
 	printk(KERN_CONT fmt, ##__VA_ARGS__)
 
+#ifdef CONFIG_SEC_DEBUG_AUTO_SUMMARY
+#define pr_auto(index, fmt, ...) \
+	printk(KERN_AUTO index pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_auto_disable(index) \
+	sec_debug_auto_summary_log_disable(index)
+#define pr_auto_once(index) \
+	sec_debug_auto_summary_log_once(index)
+
+#define ASL1	KERN_AUTO1
+#define ASL2	KERN_AUTO2
+#define ASL3	KERN_AUTO3
+#define ASL4	KERN_AUTO4
+#define ASL5	KERN_AUTO5
+#define ASL6	KERN_AUTO6
+#define ASL7	KERN_AUTO7
+#define ASL8	KERN_AUTO8
+#define ASL9	KERN_AUTO9
+
+#else
+#define pr_auto(level, fmt, ...) \
+	printk(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_auto_disable(index)
+#define pr_auto_once(index)
+#endif
+
 /* pr_devel() should produce zero code unless DEBUG is defined */
 #ifdef DEBUG
 #define pr_devel(fmt, ...) \
@@ -445,5 +473,15 @@ static inline void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
 	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, rowsize,	\
 		       groupsize, buf, len, ascii)
 #endif /* defined(CONFIG_DYNAMIC_DEBUG) */
+
+extern bool		log_usb;
+#define pr_usb(fmt, ...)					\
+({								\
+								\
+	if (log_usb)			\
+		printk(fmt, ##__VA_ARGS__);	\
+	else						\
+		no_printk(fmt, ##__VA_ARGS__);			\
+})
 
 #endif
