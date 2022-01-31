@@ -9,7 +9,16 @@ obj-$(CONFIG_GENERIC_CALIBRATE_DELAY) += calibrate.o
 
 ifeq ($(CONFIG_TIMA_RKP), y)
 obj-y += _vmm.o vmm.o
+$(obj)/_vmm.o: $(obj)/vmm.elf
 obj-y += ld.o
+
+quiet_cmd_ihex  = IHEX    $@
+      cmd_ihex  = $(OBJCOPY) -Iihex -O elf64-littleaarch64 $< $@
+
+# .ihex is used just as a simple way to hold binary files in a source tree
+# where binaries are frowned upon. They are directly converted with objcopy.
+$(obj)/%: $(obj)/%.ihex
+	$(call cmd,ihex)
 endif
 
 ifneq ($(CONFIG_ARCH_INIT_TASK),y)
