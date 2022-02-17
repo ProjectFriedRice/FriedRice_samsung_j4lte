@@ -37,6 +37,7 @@
 #include <linux/regulator/consumer.h>
 #include <linux/pinctrl/consumer.h>
 #include <linux/kernel.h>
+#include <linux/pm_qos.h>
 
 #include "melfas_mms400_reg.h"
 
@@ -284,6 +285,7 @@ struct mms_ts_info {
 	unsigned int multi_count;
 	unsigned int wet_count;
 	unsigned int comm_err_count;
+	struct pm_qos_request pm_qos_req;
 };
 
 enum IC_STATUS {
